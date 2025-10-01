@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Simulator - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="fas fa-calculator me-3"></i>Budget Simulator
+            </h1>
+            <p class="lead">
+                Plan your financial future with our comprehensive 12-month budget simulation tool. 
+                Input your income, expenses, and savings goals to see how your budget performs over time.
+            </p>
+        </div>
+
+        <!-- Budget Input Form -->
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">
+                    <i class="fas fa-edit me-2"></i>Budget Parameters
+                </h3>
+            </div>
+            <div class="card-body">
+                <form id="budgetForm">
+                    <!-- Monthly Income -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="monthly_income" class="form-label fw-bold">
+                                <i class="fas fa-dollar-sign text-success me-2"></i>Monthly Income
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control" id="monthly_income" 
+                                       name="monthly_income" placeholder="5000" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="savings_goal" class="form-label fw-bold">
+                                <i class="fas fa-piggy-bank text-warning me-2"></i>Monthly Savings Goal
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control" id="savings_goal" 
+                                       name="savings_goal" placeholder="800" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fixed Expenses -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-danger mb-3">
+                            <i class="fas fa-home me-2"></i>Fixed Expenses (Monthly)
+                        </h5>
+                        <div id="fixed-expenses">
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Expense name (e.g., Rent)" 
+                                           name="fixed_name[]" value="Rent">
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rs.</span>
+                                        <input type="number" class="form-control" placeholder="1500" 
+                                               name="fixed_amount[]" value="1500" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-expense">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Expense name" 
+                                           name="fixed_name[]" value="Insurance">
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rs.</span>
+                                        <input type="number" class="form-control" placeholder="300" 
+                                               name="fixed_amount[]" value="300" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-expense">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-fixed-expense">
+                            <i class="fas fa-plus me-1"></i>Add Fixed Expense
+                        </button>
+                    </div>
+
+                    <!-- Variable Expenses -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-info mb-3">
+                            <i class="fas fa-shopping-cart me-2"></i>Variable Expenses (Monthly Average)
+                        </h5>
+                        <div id="variable-expenses">
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Expense name (e.g., Groceries)" 
+                                           name="variable_name[]" value="Groceries">
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rs.</span>
+                                        <input type="number" class="form-control" placeholder="600" 
+                                               name="variable_amount[]" value="600" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-expense">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Expense name" 
+                                           name="variable_name[]" value="Entertainment">
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rs.</span>
+                                        <input type="number" class="form-control" placeholder="300" 
+                                               name="variable_amount[]" value="300" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-expense">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-variable-expense">
+                            <i class="fas fa-plus me-1"></i>Add Variable Expense
+                        </button>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-play me-2"></i>Run 12-Month Simulation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading and Results Section -->
+        <div id="loading" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Running budget simulation...</p>
+        </div>
+
+        <div id="results-section" class="mt-4" style="display: none;">
+            <!-- Results will be dynamically loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add expense functionality
+    document.getElementById('add-fixed-expense').addEventListener('click', function() {
+        addExpenseRow('fixed-expenses', 'fixed');
+    });
+
+    document.getElementById('add-variable-expense').addEventListener('click', function() {
+        addExpenseRow('variable-expenses', 'variable');
+    });
+
+    // Remove expense functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-expense') || e.target.parentElement.classList.contains('remove-expense')) {
+            e.target.closest('.row').remove();
+        }
+    });
+
+    // Form submission
+    document.getElementById('budgetForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        runSimulation();
+    });
+});
+
+function addExpenseRow(containerId, type) {
+    const container = document.getElementById(containerId);
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-6">
+            <input type="text" class="form-control" placeholder="Expense name" 
+                   name="${type}_name[]">
+        </div>
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text">Rs.</span>
+                <input type="number" class="form-control" placeholder="0.00" 
+                       name="${type}_amount[]" step="0.01">
+            </div>
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-expense">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(newRow);
+}
+
+function runSimulation() {
+    const form = document.getElementById('budgetForm');
+    const formData = new FormData(form);
+    
+    const fixedNames = formData.getAll('fixed_name[]');
+    const fixedAmounts = formData.getAll('fixed_amount[]');
+    const variableNames = formData.getAll('variable_name[]');
+    const variableAmounts = formData.getAll('variable_amount[]');
+    
+    const fixedExpenses = {};
+    const variableExpenses = {};
+    
+    for (let i = 0; i < fixedNames.length; i++) {
+        if (fixedNames[i] && fixedAmounts[i]) {
+            fixedExpenses[fixedNames[i]] = parseFloat(fixedAmounts[i]);
+        }
+    }
+    
+    for (let i = 0; i < variableNames.length; i++) {
+        if (variableNames[i] && variableAmounts[i]) {
+            variableExpenses[variableNames[i]] = parseFloat(variableAmounts[i]);
+        }
+    }
+    
+    const requestData = {
+        monthly_income: parseFloat(formData.get('monthly_income')),
+        savings_goal: parseFloat(formData.get('savings_goal')),
+        fixed_expenses: fixedExpenses,
+        variable_expenses: variableExpenses,
+        simulation_months: 12
+    };
+    
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results-section').style.display = 'none';
+    
+    fetch('/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        
+        if (data.success) {
+            displayResults(data.results);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loading').style.display = 'none';
+        alert('Error: ' + error.message);
+    });
+}
+
+function displayResults(results) {
+    const resultsSection = document.getElementById('results-section');
+    const summary = results.summary;
+    const monthlyResults = results.monthly_results;
+    const recommendations = results.recommendations || [];
+
+    let recommendationsHTML = '';
+    if (recommendations.length > 0) {
+        recommendationsHTML = `<div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5>Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <ul>`;
+        recommendations.forEach(rec => {
+            recommendationsHTML += `<li>${rec}</li>`;
+        });
+        recommendationsHTML += `</ul></div></div>`;
+    }
+    
+    resultsSection.innerHTML = recommendationsHTML + `
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Simulation Results
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h5>Average Monthly Savings</h5>
+                                <h3>Rs.${summary.average_monthly_savings}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h5>Goal Achievement</h5>
+                                <h3>${summary.months_goal_met}/12 months</h3>
+                                <small>(${summary.savings_goal_percentage}%)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h5>Total Saved</h5>
+                                <h3>Rs.${summary.final_cumulative_savings}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h5>Savings Range</h5>
+                                <h3>Rs.${summary.min_monthly_savings} - Rs.${summary.max_monthly_savings}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <canvas id="budgetChart" width="400" height="200"></canvas>
+                </div>
+                <div class="text-center">
+                    <a href="/download/${results.csv_filename}" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-2"></i>Download Detailed Results (CSV)
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+
+    resultsSection.style.display = 'block';
+
+    createBudgetChart(monthlyResults);
+}
+
+function createBudgetChart(monthlyResults) {
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    const months = monthlyResults.map(r => `Month ${r.month}`);
+    const monthlySavings = monthlyResults.map(r => r.monthly_savings);
+    const cumulativeSavings = monthlyResults.map(r => r.cumulative_savings);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Monthly Savings',
+                data: monthlySavings,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.1
+            }, {
+                label: 'Cumulative Savings',
+                data: cumulativeSavings,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '12-Month Budget Simulation Results'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rs.' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
