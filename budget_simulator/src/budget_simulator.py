@@ -4,6 +4,7 @@ import os
 import csv
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Any
+from ai_budget_advisor import AIBudgetAdvisor
 
 
 @dataclass
@@ -32,6 +33,7 @@ class BudgetSimulator:
     def __init__(self, budget_input: BudgetInput):
         self.budget_input = budget_input
         self.results: List[MonthlyResult] = []
+        self.ai_advisor = AIBudgetAdvisor()
 
     def simulate_variable_expenses(self, base_expenses: Dict[str, float], month: int) -> Dict[str, float]:
         varied_expenses = {}
@@ -150,37 +152,10 @@ class BudgetSimulator:
         return f"Results exported to {filepath}"
 
     def generate_recommendations(self) -> List[str]:
-        recommendations = []
-        if not self.results:
-            return ["No simulation results to analyze. Run simulation first."]
-        savings_goal = self.budget_input.savings_goal
-        avg_savings = sum(r.monthly_savings for r in self.results) / len(self.results)
-        if avg_savings < savings_goal:
-            recommendations.append(
-                "Your average monthly savings are below your savings goal. "
-                "Consider reducing some variable expenses."
-            )
-        variable_expenses_by_category = {key: [] for key in self.budget_input.variable_expenses.keys()}
-        for result in self.results:
-            for category, value in result.expense_variations.items():
-                variable_expenses_by_category[category].append(value)
-        high_variability = []
-        for category, values in variable_expenses_by_category.items():
-            std_dev = np.std(values)
-            if std_dev > 0.1 * self.budget_input.variable_expenses[category]:
-                high_variability.append((category, std_dev))
-        if high_variability:
-            rec_text = "High variability detected in variable expenses: "
-            rec_text += ", ".join(f"{c} (std dev: {v:.2f})" for c, v in high_variability)
-            rec_text += ". Consider budgeting cautiously for these items."
-            recommendations.append(rec_text)
-        total_fixed = sum(self.budget_input.fixed_expenses.values())
-        monthly_income = self.budget_input.monthly_income
-        if total_fixed > 0.4 * monthly_income:
-            recommendations.append(
-                "Fixed expenses occupy over 40% of your monthly income. "
-                "Look into renegotiating or reducing fixed costs like rent or insurance."
-            )
-        if not recommendations:
-            recommendations.append("Your budget looks well balanced. Keep up the good work!")
-        return recommendations
+        """
+        Generate AI-powered budget recommendations using Ollama LLM
+        
+        Returns:
+            List of personalized, actionable budget recommendations
+        """
+        return self.ai_advisor.generate_recommendations(self.budget_input, self.results)
