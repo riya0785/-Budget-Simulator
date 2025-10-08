@@ -216,6 +216,7 @@ class AIBudgetAdvisor:
                         - Provide advices for improving the savings rate and also ways to optimize budget allocations
                         - Address potential risks and how to mitigate them
                         - For each expense category, suggest specific budget adjustments based on historical data and trends.
+                        - Consider all monetary values in Indian Rupees (Rs)
                         
                         FORMATTING REQUIREMENTS:
                         - Start each recommendation with a clear, descriptive title using **Title** format
@@ -226,7 +227,7 @@ class AIBudgetAdvisor:
                         - Each recommendation should be a complete paragraph
                         
                         Example format:
-                        **Increase Grocery Budget Allocation** Based on your spending patterns, increase your *grocery* budget from $600 to **$660** (10% increase) as you exceed budget in **67%** of months. This will reduce financial stress and improve meal planning consistency.'''
+                        **Increase Grocery Budget Allocation** Based on your spending patterns, increase your *grocery* budget from Rs600 to **Rs660** (10% increase) as you exceed budget in **67%** of months. This will reduce financial stress and improve meal planning consistency.'''
                     },
                     {
                         'role': 'user',
@@ -253,29 +254,29 @@ class AIBudgetAdvisor:
 BUDGET SIMULATION ANALYSIS - {data['simulation_months']} MONTHS
 
 INCOME & SAVINGS PERFORMANCE:
-• Monthly Income: ${data['monthly_income']:,.2f}
-• Savings Goal: ${data['savings_goal']:,.2f}/month ({data['planned_savings_ratio']:.1f}% of income)
-• Actual Average Savings: ${data['average_monthly_savings']:,.2f}/month ({data['actual_savings_rate']:.1f}% of income)
+• Monthly Income: Rs{data['monthly_income']:,.2f}
+• Savings Goal: Rs{data['savings_goal']:,.2f}/month ({data['planned_savings_ratio']:.1f}% of income)
+• Actual Average Savings: Rs{data['average_monthly_savings']:,.2f}/month ({data['actual_savings_rate']:.1f}% of income)
 • Goal Achievement Rate: {data['goal_achievement_rate']:.1f}% of months
 • Savings Trend: {data['savings_trend']}
-• Final Cumulative Savings: ${data['final_cumulative_savings']:,.2f}
+• Final Cumulative Savings: Rs{data['final_cumulative_savings']:,.2f}
 
 EXPENSE ALLOCATION:
-• Total Expenses: ${data['total_expenses']:,.2f}
-• Fixed Expenses: {data['fixed_expense_ratio']:.1f}% of income (${sum(data['fixed_expenses'].values()):,.2f})
-• Variable Expenses Budget: {data['variable_expense_ratio']:.1f}% of income (${sum(data['variable_expenses_budget'].values()):,.2f})
+• Total Expenses: Rs{data['total_expenses']:,.2f}
+• Fixed Expenses: {data['fixed_expense_ratio']:.1f}% of income (Rs{sum(data['fixed_expenses'].values()):,.2f})
+• Variable Expenses Budget: {data['variable_expense_ratio']:.1f}% of income (Rs{sum(data['variable_expenses_budget'].values()):,.2f})
 
 FIXED EXPENSE BREAKDOWN:"""
         
         for category, amount in data['fixed_expenses'].items():
             pct = (amount / data['monthly_income']) * 100
-            prompt += f"\n  - {category}: ${amount:,.2f} ({pct:.1f}%)"
+            prompt += f"\n  - {category}: Rs{amount:,.2f} ({pct:.1f}%)"
         
         prompt += "\n\nVARIABLE EXPENSE ANALYSIS:"
         for category, analysis in data['variable_expense_analysis'].items():
             prompt += f"""
   - {category}:
-    Budget: ${analysis['budget']:.2f} | Actual Avg: ${analysis['average_actual']:.2f}
+    Budget: Rs{analysis['budget']:.2f} | Actual Avg: Rs{analysis['average_actual']:.2f}
     Budget Adherence: {analysis['budget_adherence_pct']:+.1f}% | Volatility: {analysis['volatility_ratio']:.2f}
     Over-budget {analysis['months_over_budget']}/{data['simulation_months']} months ({analysis['overspend_months_pct']:.0f}%)"""
         
@@ -284,12 +285,12 @@ FIXED EXPENSE BREAKDOWN:"""
 FINANCIAL STABILITY METRICS:
 • Income Stability Score: {data['income_stability_score']:.2f}/1.0
 • Expense Volatility Score: {data['expense_volatility_score']:.2f}/1.0
-• Best Month: Month {data['best_month']['month']} (${data['best_month']['savings']:,.2f} saved)
-• Worst Month: Month {data['worst_month']['month']} (${data['worst_month']['savings']:,.2f} saved)
+• Best Month: Month {data['best_month']['month']} (Rs{data['best_month']['savings']:,.2f} saved)
+• Worst Month: Month {data['worst_month']['month']} (Rs{data['worst_month']['savings']:,.2f} saved)
 
 OPTIMIZATION PRIORITIES:
 Based on this data, provide specific budget allocation recommendations that will:
-1. Help achieve the ${data['savings_goal']:,.2f}/month savings goal more consistently
+1. Help achieve the Rs{data['savings_goal']:,.2f}/month savings goal more consistently
 2. Optimize expense categories showing poor budget adherence or high volatility  
 3. Improve overall financial stability and predictability
 4. Suggest specific dollar amount adjustments to budget allocations
@@ -425,7 +426,7 @@ Focus on the most impactful changes this person can make to their budget allocat
         if avg_savings < budget_input.savings_goal:
             shortfall = budget_input.savings_goal - avg_savings
             recommendations.append(
-                f"Increase your monthly savings by ${shortfall:.2f} to meet your ${budget_input.savings_goal:.2f} goal. "
+                f"Increase your monthly savings by Rs{shortfall:.2f} to meet your Rs{budget_input.savings_goal:.2f} goal. "
                 f"Consider reducing variable expenses or negotiating lower fixed costs."
             )
         
@@ -438,7 +439,7 @@ Focus on the most impactful changes this person can make to their budget allocat
         elif fixed_ratio > 40:
             recommendations.append(
                 f"Fixed expenses at {fixed_ratio:.1f}% of income limit financial flexibility. "
-                f"Look for opportunities to reduce by ${total_fixed * 0.1:.2f}/month."
+                f"Look for opportunities to reduce by Rs{total_fixed * 0.1:.2f}/month."
             )
         
         # Variable expense analysis
@@ -457,7 +458,7 @@ Focus on the most impactful changes this person can make to their budget allocat
                 overspend_categories.append((category, avg_actual - budget_amount))
         
         if overspend_categories:
-            category_text = ", ".join([f"{cat} (${overspend:.2f} over)" for cat, overspend in overspend_categories])
+            category_text = ", ".join([f"{cat} (Rs{overspend:.2f} over)" for cat, overspend in overspend_categories])
             recommendations.append(
                 f"Consistently overspending in: {category_text}. "
                 f"Increase these budget allocations or implement stricter spending controls."
@@ -473,14 +474,14 @@ Focus on the most impactful changes this person can make to their budget allocat
         if goal_achievement_rate < 30:
             recommendations.append(
                 f"Only achieved savings goal in {goal_achievement_rate:.0f}% of months. "
-                f"Consider reducing your monthly savings target to ${budget_input.savings_goal * 0.8:.2f} "
+                f"Consider reducing your monthly savings target to Rs{budget_input.savings_goal * 0.8:.2f} "
                 f"to build consistency, then gradually increase."
             )
         
         # Emergency fund recommendation
         if simulation_results[-1].cumulative_savings < budget_input.monthly_income * 3:
             recommendations.append(
-                f"Build an emergency fund of ${budget_input.monthly_income * 3:.2f} (3 months expenses) "
+                f"Build an emergency fund of Rs{budget_input.monthly_income * 3:.2f} (3 months expenses) "
                 f"before focusing on other financial goals."
             )
         
