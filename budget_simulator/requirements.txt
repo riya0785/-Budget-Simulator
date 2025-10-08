@@ -2,7 +2,7 @@ Flask
 numpy
 python-dateutil
 Werkzeug
-Jinja
+Jinja2>=2.10
 MarkupSafe
 click
 itsdangerous
