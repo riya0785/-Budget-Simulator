@@ -9,3 +9,7 @@ itsdangerous
 blinker
 certifi
 ollama
+PyPDF2
+pdfplumber
+pandas
+python-dateutil
