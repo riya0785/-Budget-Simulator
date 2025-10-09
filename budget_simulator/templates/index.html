@@ -11,8 +11,9 @@
                 <i class="fas fa-calculator me-3"></i>Budget Simulator
             </h1>
             <p class="lead">
-                Plan your financial future with our comprehensive 12-month budget simulation tool. 
-                Input your income, expenses, and savings goals to see how your budget performs over time.
+                Plan your financial future with our comprehensive budget simulation tool. 
+                Choose your simulation duration (3-60 months) and input your income, expenses, and savings goals 
+                to see how your budget performs over time.
             </p>
         </div>
 
@@ -25,9 +26,9 @@
             </div>
             <div class="card-body">
                 <form id="budgetForm">
-                    <!-- Monthly Income -->
+                    <!-- Monthly Income and Simulation Duration -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="monthly_income" class="form-label fw-bold">
                                 <i class="fas fa-dollar-sign text-success me-2"></i>Monthly Income
                             </label>
@@ -37,7 +38,7 @@
                                        name="monthly_income" placeholder="5000" step="0.01" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="savings_goal" class="form-label fw-bold">
                                 <i class="fas fa-piggy-bank text-warning me-2"></i>Monthly Savings Goal
                             </label>
@@ -45,6 +46,19 @@
                                 <span class="input-group-text">Rs.</span>
                                 <input type="number" class="form-control" id="savings_goal" 
                                        name="savings_goal" placeholder="800" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="simulation_months" class="form-label fw-bold">
+                                <i class="fas fa-calendar-alt text-info me-2"></i>Simulation Duration
+                            </label>
+                            <div class="mb-2">
+                                <input type="range" class="form-range" id="simulation_months" 
+                                       name="simulation_months" min="3" max="60" value="12" 
+                                       oninput="updateMonthsDisplay(this.value)">
+                            </div>
+                            <div class="text-center">
+                                <span class="badge bg-info fs-6" id="months-display">12 months</span>
                             </div>
                         </div>
                     </div>
@@ -147,8 +161,8 @@
 
                     <!-- Submit Button -->
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg px-5">
-                            <i class="fas fa-play me-2"></i>Run 12-Month Simulation
+                        <button type="submit" class="btn btn-primary btn-lg px-5" id="simulate-button">
+                            <i class="fas fa-play me-2"></i>Run <span id="button-months">12</span>-Month Simulation
                         </button>
                     </div>
                 </form>
@@ -195,6 +209,12 @@ document.addEventListener('DOMContentLoaded', function() {
         runSimulation();
     });
 });
+
+// Update months display function
+function updateMonthsDisplay(value) {
+    document.getElementById('months-display').textContent = value + ' months';
+    document.getElementById('button-months').textContent = value;
+}
 
 function addExpenseRow(containerId, type) {
     const container = document.getElementById(containerId);
@@ -250,7 +270,7 @@ function runSimulation() {
         savings_goal: parseFloat(formData.get('savings_goal')),
         fixed_expenses: fixedExpenses,
         variable_expenses: variableExpenses,
-        simulation_months: 12
+        simulation_months: parseInt(formData.get('simulation_months'))
     };
     
     document.getElementById('loading').style.display = 'block';
@@ -318,7 +338,7 @@ function displayResults(results) {
                         <div class="card bg-success text-white">
                             <div class="card-body text-center">
                                 <h5>Goal Achievement</h5>
-                                <h3>${summary.months_goal_met}/12 months</h3>
+                                <h3>${summary.months_goal_met}/${monthlyResults.length} months</h3>
                                 <small>(${summary.savings_goal_percentage}%)</small>
                             </div>
                         </div>
@@ -340,13 +360,47 @@ function displayResults(results) {
                         </div>
                     </div>
                 </div>
-                <div class="mb-4">
-                    <canvas id="budgetChart" width="400" height="200"></canvas>
+                <div class="mb-4" style="height: 400px;">
+                    <canvas id="budgetChart"></canvas>
                 </div>
-                <div class="text-center">
+                <div class="text-center mb-4">
+                    <button class="btn btn-outline-info me-2" onclick="viewCSVData('${results.csv_filename}')">
+                        <i class="fas fa-eye me-2"></i>View CSV Data
+                    </button>
                     <a href="/download/${results.csv_filename}" class="btn btn-outline-primary">
-                        <i class="fas fa-download me-2"></i>Download Detailed Results (CSV)
+                        <i class="fas fa-download me-2"></i>Download CSV File
                     </a>
+                </div>
+                
+                <!-- CSV Data Display -->
+                <div id="csv-display" class="mt-4" style="display: none;">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-table me-2"></i>Detailed Simulation Results
+                                <button class="btn btn-sm btn-outline-secondary float-end" onclick="hideCSVData()">
+                                    <i class="fas fa-times"></i> Hide
+                                </button>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-striped table-hover mb-0" id="csv-table">
+                                    <thead class="table-dark sticky-top">
+                                        <!-- Table headers will be populated dynamically -->
+                                    </thead>
+                                    <tbody>
+                                        <!-- Table data will be populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a href="/download/${results.csv_filename}" class="btn btn-success">
+                                <i class="fas fa-download me-2"></i>Download Full CSV
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -362,44 +416,142 @@ function createBudgetChart(monthlyResults) {
     const months = monthlyResults.map(r => `Month ${r.month}`);
     const monthlySavings = monthlyResults.map(r => r.monthly_savings);
     const cumulativeSavings = monthlyResults.map(r => r.cumulative_savings);
+    const totalMonths = monthlyResults.length;
 
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: months,
             datasets: [{
-                label: 'Monthly Savings',
+                label: 'Monthly Savings (Rs.)',
                 data: monthlySavings,
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.1
+                tension: 0.1,
+                fill: false
             }, {
-                label: 'Cumulative Savings',
+                label: 'Cumulative Savings (Rs.)',
                 data: cumulativeSavings,
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.1
+                tension: 0.1,
+                fill: false
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
-                    text: '12-Month Budget Simulation Results'
+                    text: `${totalMonths}-Month Budget Simulation Results`,
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
                 }
             },
             scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Months'
+                    }
+                },
                 y: {
                     beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Amount (Rs.)'
+                    },
                     ticks: {
                         callback: function(value) {
-                            return 'Rs.' + value.toLocaleString();
+                            return 'Rs. ' + value.toLocaleString('en-IN');
                         }
                     }
                 }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
             }
         }
+    });
+}
+
+// CSV viewing functions
+function viewCSVData(filename) {
+    fetch(`/api/csv/${filename}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayCSVTable(data.csv_data, data.headers);
+                document.getElementById('csv-display').style.display = 'block';
+                document.getElementById('csv-display').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert('Error loading CSV data: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+}
+
+function hideCSVData() {
+    document.getElementById('csv-display').style.display = 'none';
+}
+
+function displayCSVTable(csvData, headers) {
+    const table = document.getElementById('csv-table');
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+    
+    // Clear existing content
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+    
+    // Create headers
+    const headerRow = document.createElement('tr');
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    
+    // Create data rows
+    csvData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        headers.forEach(header => {
+            const td = document.createElement('td');
+            let value = row[header];
+            
+            // Format numbers with proper currency/percentage formatting
+            if (typeof value === 'number') {
+                if (header.includes('Savings') || header.includes('Income') || header.includes('Expenses')) {
+                    td.textContent = 'Rs. ' + value.toLocaleString('en-IN', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    });
+                } else if (header === 'Savings_Goal_Met') {
+                    td.innerHTML = value ? 
+                        '<span class="badge bg-success">Yes</span>' : 
+                        '<span class="badge bg-danger">No</span>';
+                } else {
+                    td.textContent = value;
+                }
+            } else {
+                td.textContent = value;
+            }
+            
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
     });
 }
 </script>

@@ -1,11 +1,18 @@
 from flask import Flask, render_template, request, jsonify, send_file
 import sys
 import os
+import csv
+import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from budget_simulator import BudgetSimulator, BudgetInput
 import json
+
+# Ensure downloads directory exists
+downloads_dir = os.path.join('budget_simulator', 'downloads')
+if not os.path.exists(downloads_dir):
+    os.makedirs(downloads_dir)
 
 app = Flask(__name__,
             template_folder='../templates',
@@ -30,7 +37,8 @@ def simulate_budget():
         results = simulator.run_simulation()
         recommendations = simulator.generate_recommendations()
         results['recommendations'] = recommendations
-        csv_filename = f"simulation_{budget_input.monthly_income}_{budget_input.savings_goal}.csv"
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"budget_simulation_{timestamp}.csv"
         simulator.export_results_csv(csv_filename)
         results['csv_filename'] = csv_filename
         return jsonify({'success': True, 'results': results})
@@ -40,10 +48,51 @@ def simulate_budget():
 @app.route('/download/<filename>')
 def download_csv(filename):
     try:
-        file_path = os.path.join('budget_simulator', filename)
+        file_path = os.path.join('budget_simulator', 'downloads', filename)
         return send_file(file_path, as_attachment=True, download_name=filename)
     except Exception:
         return jsonify({'error': 'File not found'}), 404
+
+@app.route('/api/csv/<filename>')
+def view_csv(filename):
+    try:
+        file_path = os.path.join('budget_simulator', 'downloads', filename)
+        
+        if not os.path.exists(file_path):
+            return jsonify({'success': False, 'error': 'File not found'}), 404
+        
+        csv_data = []
+        headers = []
+        
+        with open(file_path, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            headers = reader.fieldnames
+            for row in reader:
+                # Convert numeric fields
+                processed_row = {}
+                for key, value in row.items():
+                    try:
+                        # Try to convert to float for numeric fields
+                        if key in ['Income', 'Fixed_Expenses', 'Variable_Expenses', 
+                                  'Total_Expenses', 'Monthly_Savings', 'Cumulative_Savings']:
+                            processed_row[key] = float(value)
+                        elif key == 'Month':
+                            processed_row[key] = int(value)
+                        elif key == 'Savings_Goal_Met':
+                            processed_row[key] = value.lower() == 'true'
+                        else:
+                            processed_row[key] = value
+                    except ValueError:
+                        processed_row[key] = value
+                csv_data.append(processed_row)
+        
+        return jsonify({
+            'success': True, 
+            'csv_data': csv_data,
+            'headers': headers
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/results')
 def results_page():

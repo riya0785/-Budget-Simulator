@@ -126,7 +126,7 @@ class BudgetSimulator:
     def export_results_csv(self, filename: str = "synthetic_budget_simulator_extended.csv") -> str:
         if not self.results:
             return "No simulation results to export. Run simulation first."
-        directory = "budget_simulator"
+        directory = "budget_simulator/downloads"
         if not os.path.exists(directory):
             os.makedirs(directory)
         filepath = os.path.join(directory, filename)
