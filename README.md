@@ -177,6 +177,46 @@ Test the AI recommendation system:
 cd budget_simulator/src
 python test_ai_recommendations.py
 ```
+Sure! Here's a simpler, easy-to-understand version for your README:
+
+---
+
+## ⚠️ Things to Know
+
+1. **LLM Recommendations Take Time**
+
+   * When you click to get recommendations, it may take **about 1 minute**.
+   * Please wait and don’t refresh or close the page while it’s running.
+
+2. **Flask Port Issues on Windows**
+
+   * Sometimes Windows blocks certain ports and you may see this error:
+
+     ```
+     An attempt was made to access a socket in a way forbidden by its access permissions
+     ```
+   * To fix it:
+
+     * Use a port **above 55000** in `app.py`:
+
+       ```python
+       app.run(debug=True, host='127.0.0.1', port=55000)
+       ```
+     * Make sure **Python is allowed** through Windows Firewall.
+     * Run your terminal as **Administrator** if needed.
+
+3. **Extra Tips**
+
+   * Make sure no other app is using the same port.
+   * If Flask or LLM doesn’t start, close any running Python processes with:
+
+     ```powershell
+     taskkill /IM python.exe /F
+     ```
+
+---
+
+
 
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to:
@@ -188,16 +228,16 @@ Contributions are welcome! Please feel free to:
 ## 📝 Example Usage
 Here's a sample budget to try:
 
-- **Monthly Income**: $5,000
-- **Savings Goal**: $800
+- **Monthly Income**: Rs.5,000
+- **Savings Goal**: Rs.800
 - **Fixed Expenses**: 
-  - Rent: $1,500
-  - Insurance: $300
-  - Car Payment: $450
+  - Rent: Rs.1,500
+  - Insurance: Rs.300
+  - Car Payment: Rs450
 - **Variable Expenses**:
-  - Food: $600
-  - Entertainment: $400
-  - Gas: $200
+  - Food: Rs.600
+  - Entertainment: Rs.400
+  - Gas: Rs.200
 
 ## 🚨 System Requirements
 
