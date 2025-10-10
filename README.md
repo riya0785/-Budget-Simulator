@@ -1,4 +1,4 @@
-# Budget Simulator 💰📊
+<img width="1918" height="1078" alt="image" src="https://github.com/user-attachments/assets/d87c8b5a-4e4b-482f-b7c2-dacd98fc23f7" /># Budget Simulator 💰📊
 
 ## Overview
 Budget Simulator is a sophisticated web-based tool that helps users plan their financial future through intelligent budget simulation and AI-powered recommendations. It combines Monte Carlo simulation techniques with cutting-edge AI analysis to provide personalized financial insights.
@@ -90,6 +90,7 @@ http://localhost:5000
 or 
 http://127.0.0.1:5000
 ```
+
 
 ## 📖 How to Use
 
